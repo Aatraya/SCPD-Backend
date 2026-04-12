@@ -3,22 +3,28 @@ from apscheduler.schedulers.background import BackgroundScheduler
 from django.utils import timezone
 
 def rotate_incidents():
-    # Import inside function to avoid AppRegistryNotReady errors
     from .models import Incidents
     from .views import LV_LOCATIONS, INCIDENT_TYPES, LV_LAT_MIN, LV_LAT_MAX, LV_LNG_MIN, LV_LNG_MAX
 
-    # 1. DELETE one random AI-generated incident
-    # We only target ai_generated=True so we don't accidentally delete your fixed test data!
-    incident_to_delete = Incidents.objects.filter(ai_generated=True).order_by('?').first()
+    # 1. DELETE ANY random incident (Removed the ai_generated=True safeguard)
+    # order_by('?') tells the PostgreSQL database to pick a truly random row
+    incident_to_delete = Incidents.objects.order_by('?').first()
     if incident_to_delete:
         incident_to_delete.delete()
         print(f"Deleted incident: {incident_to_delete.title}")
 
     # 2. INSERT one new random incident
-    loc = random.choice(LV_LOCATIONS)
+    # Adding an extra shuffle step to prevent the pseudo-random generator from picking sequentially
+    shuffled_locations = list(LV_LOCATIONS)
+    random.shuffle(shuffled_locations)
+    loc = random.choice(shuffled_locations)
+
+    shuffled_types = list(INCIDENT_TYPES)
+    random.shuffle(shuffled_types)
+    incident_type = random.choice(shuffled_types)
+
     lat = max(LV_LAT_MIN, min(LV_LAT_MAX, loc[1] + random.uniform(-0.008, 0.008)))
     lng = max(LV_LNG_MIN, min(LV_LNG_MAX, loc[2] + random.uniform(-0.008, 0.008)))
-    incident_type = random.choice(INCIDENT_TYPES)
 
     new_incident = Incidents.objects.create(
         title=f"{incident_type.title()} at {loc[0]}",
@@ -30,7 +36,7 @@ def rotate_incidents():
         incident_type=incident_type,
         clandestine=random.choice([True, False]),
         description="Auto-generated rotating incident",
-        ai_generated=True
+        ai_generated=True 
     )
     print(f"Added incident: {new_incident.title}")
 
