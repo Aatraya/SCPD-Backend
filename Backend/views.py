@@ -1,8 +1,8 @@
 from django.shortcuts import render
 from rest_framework import viewsets, permissions, status
 from rest_framework.response import Response
-from .models import Criminal, Police , Incidents
-from .serializers import CriminalSerializer, PoliceOfficerSerializer,IncidentSerializer
+from .models import Criminal, Police , Incidents, Warrants
+from .serializers import CriminalSerializer, PoliceOfficerSerializer,IncidentSerializer,WarrantSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from django.contrib.auth.models import Group
@@ -10,6 +10,7 @@ from django.db.models import Count
 from datetime import timedelta
 import random
 from django.utils import timezone
+from rest_framework.permissions import IsAuthenticated
 
 
 class PoliceViewSet(viewsets.ModelViewSet):
@@ -238,3 +239,8 @@ class IncidentGraphDataView(APIView):
             "total": Incidents.objects.count(),
             "ai_generated": Incidents.objects.filter(ai_generated=True).count(),
         })
+    
+class WarrantViewSet(viewsets.ModelViewSet):
+    queryset = Warrants.objects.all().order_by('-timestamp')
+    serializer_class = WarrantSerializer
+    permission_classes = [IsAuthenticated] 

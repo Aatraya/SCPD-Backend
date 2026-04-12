@@ -38,3 +38,14 @@ class Incidents(models.Model):
     incident_type = models.CharField(max_length=100, default='unknown')  # robbery, murder etc
     ai_generated = models.BooleanField(default=False)            # track AI vs manually added
     description = models.TextField(blank=True, default='')       # incident description
+
+class Warrants(models.Model):
+    TYPE_CHOICES = (('WARRANT', 'Warrant'), ('BURN','Burn Order'),) 
+    target_id = models.CharField(max_length=300)
+    urgency = models.IntegerField(default = 50)
+    justification = models.TextField(blank = True , null = True)
+    type_warrant = models.CharField(max_length=20, choices=TYPE_CHOICES,default='WARRANT')
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.type_warrant} - Target : {self.target_id} (Urgency: {self.urgency})"

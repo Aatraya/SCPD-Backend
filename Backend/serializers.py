@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Criminal, Police, Incidents
+from .models import Criminal, Police, Incidents,Warrants
 
 class PoliceOfficerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -50,3 +50,8 @@ class IncidentSerializer(serializers.ModelSerializer):
             ret.pop('clandestine', None)
             
         return ret
+    
+class WarrantSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Warrants
+        fields = ['id', 'target_id', 'urgency', 'justification', 'type_warrant', 'timestamp']

@@ -11,6 +11,8 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,12 +22,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-3*pnpddszia!$+pow2gno(-t8o!3vu=p@6##jx=5d7dn39#(8u'
-
+SECRET_KEY = os.environ.get('SECRET_KEY', 'your-fallback-local-key')
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('RENDER', '') == ''
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [os.environ.get('RENDER_EXTERNAL_HOSTNAME', '127.0.0.1')]
 
 
 # Application definition
@@ -77,17 +78,10 @@ WSGI_APPLICATION = 'SCPD.wsgi.application'
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'sincity_db',
-        'USER': 'aatraya',
-        'PASSWORD': 'your_secure_password',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-        'OPTIONS': {
-            'pool': True,
-        },
-    }
+    'default': dj_database_url.config(
+        default='postgres://postgres:mypassword@127.0.0.1:5432/scpd_db',
+        conn_max_age=600
+    )
 }
 
 # Password validation
@@ -137,5 +131,5 @@ REST_FRAMEWORK = {
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # React default
-    "http://localhost:5173",  # Vite default
+    #add front end urls here when made VVIMP 
 ]
