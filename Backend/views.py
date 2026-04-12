@@ -42,12 +42,13 @@ class CriminalViewSet(viewsets.ModelViewSet):
         if user.is_authenticated and user.groups.filter(name='Mafia').exists():
             return Criminal.syndicate.all()
         return Criminal.objects.all()
-
+    
     def get_permissions(self):
-        if self.action in ['list', 'retrieve', 'create']:
+        # Add 'destroy' to the list of actions allowed for any authenticated user
+        if self.action in ['list', 'retrieve', 'create', 'destroy']:
             return [permissions.IsAuthenticated()]
-        if self.action == 'destroy':
-            return [IsMafiaOrAdmin()]
+        
+        # Keep everything else (like full updates) restricted to Admin
         return [permissions.IsAdminUser()]
     
 
