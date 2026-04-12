@@ -29,19 +29,14 @@ class CriminalViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        
-        # Safely check for authentication BEFORE checking groups to prevent AnonymousUser crash
         if user.is_authenticated and user.groups.filter(name='Mafia').exists():
             return Criminal.syndicate.all()
-        
-        # Police and everyone else get the restricted database access
         return Criminal.objects.all()
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve']:
+        if self.action in ['list', 'retrieve', 'create']:  # ← add 'create'
             return [permissions.IsAuthenticated()]
-        
-        return [permissions.IsAdminUser()]
+        return [permissions.IsAdminUser()]  # delete/update still admin-only
 
 
 class IncidentViewSet(viewsets.ReadOnlyModelViewSet):
