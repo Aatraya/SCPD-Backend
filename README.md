@@ -859,18 +859,6 @@ Response:
 ```
 
 ---
-
-## 🔐 Security Notes
-
-- **Never commit `.env` file** — add it to `.gitignore`
-- **Breach code should be changed** in production — use environment variable
-- **Use strong passwords** for database and superuser
-- **HTTPS required** for production — use Let's Encrypt with Gunicorn + Nginx
-- **Rate limiting recommended** — add `djangorestframework-ratelimit` package
-- **Audit logging** — consider adding activity logs for sensitive operations
-
----
-
 ## 📚 Additional Resources
 
 - [Django Documentation](https://docs.djangoproject.com/)
