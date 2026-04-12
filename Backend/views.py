@@ -242,13 +242,13 @@ class IncidentGraphDataView(APIView):
     
 class WarrantViewSet(viewsets.ModelViewSet):
     serializer_class = WarrantSerializer
-    permission_classes = [IsAuthenticated] 
+    permission_classes = [permissions.IsAuthenticated] 
 
     def get_queryset(self):
         user = self.request.user
         # If the user is Mafia, ONLY return Burn Orders
         if user.is_authenticated and user.groups.filter(name='Mafia').exists():
-            return Warrants.objects.filter(type_warrant='BURN').order_by('-timestamp')
+            return Warrants.objects.all().order_by('-timestamp')
         
         # If the user is Police, ONLY return standard Warrants
         return Warrants.objects.filter(type_warrant='WARRANT').order_by('-timestamp')
