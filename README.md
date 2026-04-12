@@ -133,6 +133,8 @@ pip install "psycopg[binary,pool]"
 pip install whitenoise
 pip install djangorestframework-simplejwt
 pip install gunicorn  # for production
+pip install apscheduler
+pip install dj-database-url
 ```
 
 ### 4. Install and setup PostgreSQL
