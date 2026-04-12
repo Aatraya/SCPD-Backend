@@ -5,7 +5,7 @@ class BackendConfig(AppConfig):
     name = 'Backend'
 
     def ready(self):
-        # Prevent the scheduler from running twice when Django's auto-reloader runs
-        if os.environ.get('RUN_MAIN') == 'true':
+        # Allow scheduler to run locally (RUN_MAIN) OR in production (RENDER)
+        if os.environ.get('RUN_MAIN') == 'true' or os.environ.get('RENDER') is not None:
             from . import scheduler
             scheduler.start_scheduler()
