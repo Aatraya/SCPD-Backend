@@ -34,10 +34,16 @@ class CriminalViewSet(viewsets.ModelViewSet):
         return Criminal.objects.all()
 
     def get_permissions(self):
-        if self.action in ['list', 'retrieve', 'create']:  # ← add 'create'
+        if self.action in ['list', 'retrieve', 'create']:
             return [permissions.IsAuthenticated()]
-        return [permissions.IsAdminUser()]  # delete/update still admin-only
-
+        
+        if self.action == 'destroy':
+            # Allow mafia users to burn (delete) criminals
+            return [permissions.IsAuthenticated()]
+        
+        # update/partial_update still admin only
+        return [permissions.IsAdminUser()]
+    
 
 class IncidentViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = IncidentSerializer
