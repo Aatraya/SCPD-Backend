@@ -10,25 +10,24 @@ class PoliceOfficerSerializer(serializers.ModelSerializer):
 class CriminalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Criminal
-        # Define all fields available in the model
         fields = [
-            'criminal_id', 'incidents', 'last_seen', 
-            'loyalty_name', 'loyalty_level', 'unmonitored_lanes','casinos'
+            'id', 'police_name', 'mafia_name',
+            'police_status', 'mafia_status',
+            'police_threat', 'mafia_threat',
+            'police_notes', 'mafia_notes'
         ]
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
         request = self.context.get('request')
-
-        # Check if the user is NOT in the Mafia group
         is_mafia = request.user.groups.filter(name='Mafia').exists() if request else False
 
         if not is_mafia:
-            # REMOVE secret fields for Police/Public users
-            ret.pop('loyalty_name', None)
-            ret.pop('loyalty_level', None)
-            ret.pop('unmonitored_lanes', None)
-            
+            ret.pop('mafia_name', None)
+            ret.pop('mafia_status', None)
+            ret.pop('mafia_threat', None)
+            ret.pop('mafia_notes', None)
+
         return ret
 
 

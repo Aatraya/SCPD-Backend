@@ -24,7 +24,7 @@ class PoliceViewSet(viewsets.ModelViewSet):
         return [permissions.IsAdminUser()] # deletion only by mafia
 
 
-class CriminalViewSet(viewsets.ReadOnlyModelViewSet):
+class CriminalViewSet(viewsets.ModelViewSet):
     serializer_class = CriminalSerializer
 
     def get_queryset(self):

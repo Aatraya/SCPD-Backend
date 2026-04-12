@@ -26,8 +26,11 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'your-fallback-local-key')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get('RENDER', '') == ''
 
-ALLOWED_HOSTS = [os.environ.get('RENDER_EXTERNAL_HOSTNAME', '127.0.0.1')]
-
+ALLOWED_HOSTS = [
+    '127.0.0.1',
+    'localhost',
+    os.environ.get('RENDER_EXTERNAL_HOSTNAME', ''),
+]
 
 # Application definition
 
@@ -130,6 +133,8 @@ REST_FRAMEWORK = {
 }
 
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",  # React default
-    #add front end urls here when made VVIMP 
+    "http://localhost:3000",
+    "http://localhost:5173",
+    "http://127.0.0.1:3000",
+    # add versailee
 ]

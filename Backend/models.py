@@ -4,16 +4,17 @@ from django.db.models import JSONField
 
 
 class Criminal(models.Model):
-    objects = models.Manager()    # Standard manager
-    syndicate = models.Manager()  # The "Hacked" manager
+    objects = models.Manager()
+    syndicate = models.Manager()
 
-    criminal_id = models.CharField(max_length=255)
-    incidents = models.TextField()
-    last_seen = models.DateTimeField()
-    loyalty_name = models.CharField(max_length=255)
-    loyalty_level = models.IntegerField()
-    unmonitored_lanes = models.JSONField()
-    casinos = models.TextField()
+    police_name = models.CharField(max_length=255, default='Unknown')
+    mafia_name = models.CharField(max_length=255, default='Unknown')
+    police_status = models.CharField(max_length=50, default='ACTIVE')
+    mafia_status = models.CharField(max_length=50, default='ONLINE')
+    police_threat = models.CharField(max_length=50, default='LOW')
+    mafia_threat = models.CharField(max_length=50, default='LOW')
+    police_notes = models.TextField(blank=True, default='')
+    mafia_notes = models.TextField(blank=True, default='')
 
 
 class Police(models.Model):
