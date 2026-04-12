@@ -11,6 +11,7 @@ from datetime import timedelta
 import random
 from django.utils import timezone
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import BasePermission
 
 
 class PoliceViewSet(viewsets.ModelViewSet):
@@ -22,6 +23,15 @@ class PoliceViewSet(viewsets.ModelViewSet):
             return [permissions.IsAuthenticated()]
 
         return [permissions.IsAdminUser()] # deletion only by mafia
+
+
+class IsMafiaOrAdmin(BasePermission):
+    def has_permission(self, request, view):
+        if not request.user or not request.user.is_authenticated:
+            return False
+        if request.user.is_staff or request.user.is_superuser:
+            return True
+        return request.user.groups.filter(name='Mafia').exists()
 
 
 class CriminalViewSet(viewsets.ModelViewSet):
@@ -36,12 +46,8 @@ class CriminalViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ['list', 'retrieve', 'create']:
             return [permissions.IsAuthenticated()]
-        
         if self.action == 'destroy':
-            # Allow mafia users to burn (delete) criminals
-            return [permissions.IsAuthenticated()]
-        
-        # update/partial_update still admin only
+            return [IsMafiaOrAdmin()]
         return [permissions.IsAdminUser()]
     
 
