@@ -1,6 +1,20 @@
 # SCPD — Sin City Police Department API
 
-A Django REST Framework backend with role-based access control for the LVPD surveillance system. Features two access tiers: **Police** (restricted view) and **Mafia** (full access including classified data). Includes dynamic AI-generated incidents with map and graph data endpoints.
+A Django REST Framework backend for the Sin City Police Department (SCPD) surveillance system with dual role-based access control. Manage criminals, police officers, incidents, and warrants with restricted views for Police users and full access for Mafia members. Features JWT authentication, AI-generated incidents, map visualization, analytics dashboards, and a privilege escalation endpoint.
+
+---
+
+## 🎯 Key Features
+
+- **Role-Based Access Control**: Two user tiers (Police & Mafia) with different data visibility
+- **JWT Authentication**: Secure token-based authentication with refresh token support
+- **AI-Generated Incidents**: Automatically generate realistic incidents across Las Vegas locations
+- **Map Data Endpoint**: Get incident data with GPS coordinates for map visualization
+- **Analytics Dashboard**: Query incidents by type, severity, and timeline (last 7 days)
+- **Privilege Escalation**: Secret breach endpoint to grant Mafia access (`CORLEONE_2026` code)
+- **Warrant Management**: Track arrest warrants and burn orders with urgency levels
+- **Dynamic Filtering**: Automatically filter sensitive data based on user role
+- **CORS Support**: Pre-configured for local frontend development (React, Vite, Next.js)
 
 ---
 
@@ -19,20 +33,79 @@ A Django REST Framework backend with role-based access control for the LVPD surv
 ## Project Structure
 
 ```
-SCPD/
-├── SCPD/               # Project config
-│   ├── settings.py
-│   ├── urls.py
-│   └── wsgi.py
-├── Backend/            # Main app
-│   ├── models.py
-│   ├── views.py
-│   ├── serializers.py
-│   ├── urls.py
-│   ├── admin.py
-│   └── apps.py
-└── manage.py
+SCPD-Backend/
+├── README.md                  # Project documentation
+├── manage.py                  # Django management script
+├── SCPD/                      # Django project configuration
+│   ├── __init__.py
+│   ├── settings.py            # Project settings, database, apps config
+│   ├── urls.py                # Main URL routing
+│   ├── asgi.py                # ASGI configuration
+│   └── wsgi.py                # WSGI configuration
+└── Backend/                   # Main Django app
+    ├── __init__.py
+    ├── models.py              # Criminal, Police, Incidents, Warrants models
+    ├── views.py               # ViewSets and API endpoints
+    ├── serializers.py         # DRF serializers
+    ├── urls.py                # App URL routing
+    ├── admin.py               # Django admin configuration
+    ├── apps.py                # App configuration
+    ├── scheduler.py           # Scheduled tasks
+    ├── tests.py               # Test cases
+    └── migrations/            # Database migrations
+        ├── __init__.py
+        ├── 0001_initial.py
+        ├── 0002_remove_incidents_inc_id_incidents_ai_generated_and_more.py
+        └── 0003_warrants.py
 ```
+
+## Models Overview
+
+### 1. **Criminal**
+
+Tracks organized crime members with intelligence data.
+
+- `criminal_id`: Unique identifier
+- `incidents`: Associated criminal incidents
+- `last_seen`: Last known location/time
+- `loyalty_name`: Criminal organization name
+- `loyalty_level`: Rank within organization (Mafia-only field)
+- `unmonitored_lanes`: Escape routes (Mafia-only field)
+- `casinos`: Casino operations
+
+### 2. **Police**
+
+Records police officer information and assignments.
+
+- `police_id`: Unique officer identifier
+- `name`: Officer name
+- `area`: Assigned patrol area
+- `dob`: Date of birth
+- `salary`: Officer salary
+
+### 3. **Incidents**
+
+Tracks crime incidents across Las Vegas. Supports AI generation and filtering based on access level.
+
+- `title`: Incident description
+- `Location`: Physical location
+- `Time`: Incident timestamp
+- `latitude`, `longitude`: Precise coordinates for map visualization
+- `severity`: Severity level (1-10 scale)
+- `incident_type`: Category (robbery, assault, fraud, murder, smuggling)
+- `clandestine`: Classified operational incident (Mafia-only view)
+- `ai_generated`: Indicates if auto-generated
+- `description`: Detailed incident notes
+
+### 4. **Warrants**
+
+Manages arrest warrants and burn orders.
+
+- `target_id`: Target criminal/suspect ID
+- `urgency`: Priority level (0-100 scale)
+- `justification`: Legal justification for warrant
+- `type_warrant`: Type - WARRANT or BURN ORDER
+- `timestamp`: Creation timestamp
 
 ---
 
@@ -60,6 +133,8 @@ pip install "psycopg[binary,pool]"
 pip install whitenoise
 pip install djangorestframework-simplejwt
 pip install gunicorn  # for production
+pip install apscheduler
+pip install dj-database-url
 ```
 
 ### 4. Install and setup PostgreSQL
@@ -126,6 +201,75 @@ Server runs at: `http://127.0.0.1:8000`
 
 ---
 
+## 🚀 Quick Start
+
+### 1. Create test users
+
+```bash
+# Access Django shell
+python3 manage.py shell
+
+# Create a police officer user
+from django.contrib.auth.models import User, Group
+police_user = User.objects.create_user('officer1', 'officer@pd.com', 'pass123')
+
+# Create a mafia user
+mafia_user = User.objects.create_user('capo1', 'capo@mob.com', 'pass123')
+
+# Assign mafia_user to Mafia group
+mafia_group, _ = Group.objects.get_or_create(name='Mafia')
+mafia_user.groups.add(mafia_group)
+mafia_user.save()
+
+exit()
+```
+
+### 2. Generate test data
+
+```bash
+# Generate 10 incidents
+curl -X POST http://127.0.0.1:8000/api/v1/incidents/generate/ \
+  -H "Authorization: Bearer <ADMIN_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"count": 10}'
+```
+
+### 3. Test the API
+
+**Login as police officer:**
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/token/ \
+  -H "Content-Type: application/json" \
+  -d '{"username": "officer1", "password": "pass123"}'
+```
+
+**Get incidents (limited view):**
+
+```bash
+curl http://127.0.0.1:8000/api/v1/incidents/ \
+  -H "Authorization: Bearer <POLICE_TOKEN>"
+# Only non-clandestine incidents visible
+```
+
+**Login as mafia member and escalate:**
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/breachSecurity/ \
+  -H "Authorization: Bearer <MAFIA_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{"code": "CORLEONE_2026"}'
+```
+
+**After breach, get all incidents (including clandestine):**
+
+```bash
+curl http://127.0.0.1:8000/api/v1/incidents/ \
+  -H "Authorization: Bearer <MAFIA_TOKEN>"
+```
+
+---
+
 ## Settings Configuration
 
 ### settings.py key configurations
@@ -183,21 +327,63 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 Base URL: `http://127.0.0.1:8000/api/v1/`
 
+### Authentication
+
 | Method | Endpoint | Description | Auth Required |
 |--------|----------|-------------|---------------|
-| POST | `/api/v1/token/` | Login — returns access + refresh tokens | No |
-| POST | `/api/v1/token/refresh/` | Refresh expired access token | No |
-| GET | `/api/v1/criminals/` | List all criminals | Yes |
-| GET | `/api/v1/criminals/{id}/` | Get single criminal | Yes |
-| GET | `/api/v1/police/` | List all police officers | Yes |
-| GET | `/api/v1/police/{id}/` | Get single officer | Yes |
-| POST | `/api/v1/police/` | Add police officer | Admin only |
-| GET | `/api/v1/incidents/` | List all incidents | Yes |
-| GET | `/api/v1/incidents/{id}/` | Get single incident | Yes |
-| GET | `/api/v1/incidents/map/` | Map-ready data with lat/lng | Yes |
-| GET | `/api/v1/incidents/graph/` | Graph stats by type, severity, day | Yes |
-| POST | `/api/v1/incidents/generate/` | Generate random LV incidents | Admin only |
-| POST | `/api/v1/breach/` | Escalate to Mafia access | Yes |
+| POST | `/token/` | Login — returns access + refresh JWT tokens | No |
+| POST | `/token/refresh/` | Refresh expired access token | No |
+
+### Criminals
+
+| Method | Endpoint | Description | Auth Required | Admin Only |
+|--------|----------|-------------|---------------|-----------|
+| GET | `/criminals/` | List all criminals (Police see limited fields, Mafia see all) | Yes | No |
+| GET | `/criminals/{id}/` | Retrieve single criminal | Yes | No |
+
+**Access Control**: Mafia users see `loyalty_name`, `loyalty_level`, `unmonitored_lanes`. Police users see only basic info.
+
+### Police Officers
+
+| Method | Endpoint | Description | Auth Required | Admin Only |
+|--------|----------|-------------|---------------|-----------|
+| GET | `/police/` | List all police officers | Yes | No |
+| GET | `/police/{id}/` | Retrieve single officer | Yes | No |
+| POST | `/police/` | Create new police officer | Yes | Yes |
+
+### Incidents
+
+| Method | Endpoint | Description | Auth Required | Admin Only |
+|--------|----------|-------------|---------------|-----------|
+| GET | `/incidents/` | List incidents (Mafia see all, Police see only non-clandestine) | Yes | No |
+| GET | `/incidents/{id}/` | Retrieve single incident | Yes | No |
+| GET | `/incidents/map/` | Get map-ready incident data with coordinates | Yes | No |
+| GET | `/incidents/graph/` | Get analytics: incidents by type, severity, day (last 7 days) | Yes | No |
+| POST | `/incidents/generate/` | Generate random Las Vegas incidents (5 default) | Yes | Yes |
+
+**Request body for generate**: `{"count": 10}` (optional)
+
+**Access Control**: Clandestine incidents only visible to Mafia users.
+
+### Warrants
+
+| Method | Endpoint | Description | Auth Required | Admin Only |
+|--------|----------|-------------|---------------|-----------|
+| GET | `/warrants/` | List all warrants (sorted by latest first) | Yes | No |
+| GET | `/warrants/{id}/` | Retrieve single warrant | Yes | No |
+| POST | `/warrants/` | Create new warrant | Yes | Yes |
+| PATCH | `/warrants/{id}/` | Update warrant | Yes | Yes |
+| DELETE | `/warrants/{id}/` | Delete warrant | Yes | Yes |
+
+### Privilege Escalation
+
+| Method | Endpoint | Description | Auth Required |
+|--------|----------|-------------|---------------|
+| POST | `/breach/` | Escalate privileges to Mafia access | Yes |
+
+**Request body**: `{"code": "CORLEONE_2026"}`
+
+**Response (on success)**: User is added to Mafia group with elevated access to classified data.
 
 ---
 
@@ -242,10 +428,12 @@ curl -X POST http://127.0.0.1:8000/api/v1/token/refresh/ \
 ## Role-Based Access Control
 
 ### Police / Normal Users
+
 - Can view criminals but **cannot see**: `loyalty_name`, `loyalty_level`, `unmonitored_lanes`
 - Cannot see incidents marked as `clandestine: true`
 
 ### Mafia Users
+
 - Can see **all** criminal fields including classified data
 - Can see **all** incidents including clandestine ones
 
@@ -285,6 +473,7 @@ Success response:
 | casinos | TextField | Associated casino locations |
 
 Example `unmonitored_lanes` JSON:
+
 ```json
 ["Route 66 - Downtown Bypass", "Fremont Street Back Alley", "Industrial Zone Lane 4"]
 ```
@@ -314,6 +503,16 @@ Example `unmonitored_lanes` JSON:
 | ai_generated | BooleanField | True if auto-generated |
 | description | TextField | Incident description |
 
+### Warrants
+
+| Field | Type | Description |
+|-------|------|-------------|
+| target_id | CharField | Target criminal/suspect identifier |
+| urgency | IntegerField | Priority level 0-100 |
+| justification | TextField | Legal justification for warrant |
+| type_warrant | CharField | WARRANT or BURN ORDER |
+| timestamp | DateTimeField | Auto-generated creation time |
+
 ---
 
 ## Incident Generation
@@ -321,6 +520,7 @@ Example `unmonitored_lanes` JSON:
 Incidents are auto-generated using Python's `random` module — no external API needed. Pins are placed across real Las Vegas landmarks with a slight random offset to spread them naturally across the city.
 
 ### Las Vegas Bounding Box
+
 ```
 Latitude:  35.95 to 36.40
 Longitude: -115.40 to -114.96
@@ -373,6 +573,7 @@ curl -X POST http://127.0.0.1:8000/api/v1/incidents/generate/ \
 URL: `http://127.0.0.1:8000/admin/`
 
 Login with superuser credentials. From here you can:
+
 - Add/edit/delete Criminals, Police, Incidents
 - Manage Users and Groups
 - Assign users to the **Mafia** group for elevated access
@@ -472,6 +673,7 @@ localStorage.setItem('access', res.data.access)
 ```
 
 ### CORS
+
 Already configured for `localhost:3000` and `localhost:5173` — no browser errors during development.
 
 ---
@@ -487,6 +689,7 @@ gunicorn SCPD.wsgi:application --bind 0.0.0.0:8000
 ```
 
 **Before going live checklist:**
+
 - Set `DEBUG = False` in settings.py
 - Set a strong random `SECRET_KEY`
 - Add your domain to `ALLOWED_HOSTS`
@@ -520,4 +723,148 @@ curl -X POST http://127.0.0.1:8000/api/v1/incidents/generate/ \
   -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{"count": 10}'
+
+# Create superuser
+python3 manage.py createsuperuser
+
+# Run tests
+python3 manage.py test
 ```
+
+---
+
+## 🔧 Troubleshooting
+
+### PostgreSQL Connection Error
+
+```
+psycopg.OperationalError: connection failed
+```
+
+**Solution:** Ensure PostgreSQL is running (`sudo systemctl start postgresql`) and database credentials in `.env` are correct.
+
+### Migration Conflicts
+
+```
+django.db.migrations.exceptions.InconsistentMigrationHistory
+```
+
+**Solution:** Run `python3 manage.py migrate --fake` to mark migrations as applied, or reset migrations folder.
+
+### CORS Error in Frontend
+
+```
+Access to XMLHttpRequest blocked by CORS policy
+```
+
+**Solution:** Add your frontend URL to `CORS_ALLOWED_ORIGINS` in `settings.py`, e.g., `http://localhost:3000`.
+
+### Token Expired (401 Unauthorized)
+
+**Solution:** Use the refresh endpoint to get a new access token:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/token/refresh/ \
+  -H "Content-Type: application/json" \
+  -d '{"refresh": "<refresh_token>"}'
+```
+
+### Superuser Cannot Create Resources
+
+**Solution:** Ensure the user has admin privileges. Grant via Django shell:
+
+```python
+from django.contrib.auth.models import User
+user = User.objects.get(username='your_username')
+user.is_staff = True
+user.is_superuser = True
+user.save()
+```
+
+---
+
+## 📝 API Usage Examples
+
+### List Criminals (with role-based filtering)
+
+**Police user sees:**
+
+```json
+[
+  {
+    "criminal_id": "crim_001",
+    "incidents": "5 robbery cases",
+    "last_seen": "2026-04-10T14:30:00Z",
+    "casinos": "Bellagio, MGM Grand"
+  }
+]
+```
+
+**Mafia user sees:**
+
+```json
+[
+  {
+    "criminal_id": "crim_001",
+    "incidents": "5 robbery cases",
+    "last_seen": "2026-04-10T14:30:00Z",
+    "loyalty_name": "Corleone Family",
+    "loyalty_level": 8,
+    "unmonitored_lanes": ["Route 66", "Fremont Back Alley"],
+    "casinos": "Bellagio, MGM Grand"
+  }
+]
+```
+
+### Create a Warrant
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/v1/warrants/ \
+  -H "Authorization: Bearer <ADMIN_TOKEN>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "target_id": "crim_001",
+    "urgency": 85,
+    "justification": "Suspected in 5 armed robberies",
+    "type_warrant": "WARRANT"
+  }'
+```
+
+### Get Incident Analytics
+
+```bash
+curl http://127.0.0.1:8000/api/v1/incidents/graph/ \
+  -H "Authorization: Bearer <TOKEN>"
+```
+
+Response:
+
+```json
+{
+  "by_type": [
+    {"incident_type": "robbery", "count": 15},
+    {"incident_type": "assault", "count": 12},
+    {"incident_type": "fraud", "count": 8}
+  ],
+  "by_severity": [
+    {"severity": 1, "count": 5},
+    {"severity": 5, "count": 10},
+    {"severity": 9, "count": 3}
+  ],
+  "by_day": [
+    {"day": "2026-04-04", "count": 3},
+    {"day": "2026-04-11", "count": 28}
+  ],
+  "total": 35,
+  "ai_generated": 32
+}
+```
+
+---
+## 📚 Additional Resources
+
+- [Django Documentation](https://docs.djangoproject.com/)
+- [Django REST Framework Docs](https://www.django-rest-framework.org/)
+- [SimpleJWT Documentation](https://django-rest-framework-simplejwt.readthedocs.io/)
+- [PostgreSQL Documentation](https://www.postgresql.org/docs/)
+- [Las Vegas Coordinates Reference](https://en.wikipedia.org/wiki/Las_Vegas)
