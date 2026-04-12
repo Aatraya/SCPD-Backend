@@ -34,7 +34,7 @@ class CriminalSerializer(serializers.ModelSerializer):
 class IncidentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Incidents
-        fields = ['Inc_id', 'title', 'Location', 'Time', 'latitude', 'longitude', 'clandestine']
+        fields = ['id', 'title', 'Location', 'Time', 'latitude', 'longitude', 'clandestine', 'severity', 'incident_type', 'ai_generated', 'description']
 
     def to_representation(self, instance):
         ret = super().to_representation(instance)
