@@ -79,7 +79,7 @@ WSGI_APPLICATION = 'SCPD.wsgi.application'
 
 DATABASES = {
     'default': dj_database_url.config(
-        default='postgres://postgres:mypassword@127.0.0.1:5432/sincity_db',
+        default='postgres://aatraya:Jojo@127.0.0.1:5432/sincity_db',
         conn_max_age=600
     )
 }
