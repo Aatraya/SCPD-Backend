@@ -17,6 +17,7 @@ import random
 from django.utils import timezone
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.permissions import BasePermission
+from rest_framework.exceptions import PermissionDenied
 
 
 class PoliceViewSet(viewsets.ModelViewSet):
@@ -257,3 +258,25 @@ class WarrantViewSet(viewsets.ModelViewSet):
 
         # If the user is Police, ONLY return standard Warrants
         return Warrants.objects.filter(type_warrant="WARRANT").order_by("-timestamp")
+
+    def perform_create(self, serializer):
+        # BURN-1 FIX: Only Mafia/Admin can create BURN orders
+        if serializer.validated_data.get("type_warrant") == "BURN":
+            user = self.request.user
+            if not (
+                user.is_staff
+                or user.is_superuser
+                or user.groups.filter(name="Mafia").exists()
+            ):
+                raise PermissionDenied(
+                    "Only Mafia operatives can issue BURN orders."
+                )
+
+        warrant = serializer.save()
+
+        # BURN-2 FIX: Backend-enforced cascade — delete target Criminal
+        if warrant.type_warrant == "BURN":
+            try:
+                Criminal.objects.filter(id=warrant.target_id).delete()
+            except (ValueError, TypeError):
+                pass  # target_id doesn't map to a valid Criminal
