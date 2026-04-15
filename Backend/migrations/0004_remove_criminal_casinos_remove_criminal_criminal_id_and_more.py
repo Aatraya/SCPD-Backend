@@ -6,76 +6,76 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('Backend', '0003_warrants'),
+        ("Backend", "0003_warrants"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='criminal',
-            name='casinos',
+            model_name="criminal",
+            name="casinos",
         ),
         migrations.RemoveField(
-            model_name='criminal',
-            name='criminal_id',
+            model_name="criminal",
+            name="criminal_id",
         ),
         migrations.RemoveField(
-            model_name='criminal',
-            name='incidents',
+            model_name="criminal",
+            name="incidents",
         ),
         migrations.RemoveField(
-            model_name='criminal',
-            name='last_seen',
+            model_name="criminal",
+            name="last_seen",
         ),
         migrations.RemoveField(
-            model_name='criminal',
-            name='loyalty_level',
+            model_name="criminal",
+            name="loyalty_level",
         ),
         migrations.RemoveField(
-            model_name='criminal',
-            name='loyalty_name',
+            model_name="criminal",
+            name="loyalty_name",
         ),
         migrations.RemoveField(
-            model_name='criminal',
-            name='unmonitored_lanes',
+            model_name="criminal",
+            name="unmonitored_lanes",
         ),
         migrations.AddField(
-            model_name='criminal',
-            name='mafia_name',
-            field=models.CharField(default='Unknown', max_length=255),
+            model_name="criminal",
+            name="mafia_name",
+            field=models.CharField(default="Unknown", max_length=255),
         ),
         migrations.AddField(
-            model_name='criminal',
-            name='mafia_notes',
-            field=models.TextField(blank=True, default=''),
+            model_name="criminal",
+            name="mafia_notes",
+            field=models.TextField(blank=True, default=""),
         ),
         migrations.AddField(
-            model_name='criminal',
-            name='mafia_status',
-            field=models.CharField(default='ONLINE', max_length=50),
+            model_name="criminal",
+            name="mafia_status",
+            field=models.CharField(default="ONLINE", max_length=50),
         ),
         migrations.AddField(
-            model_name='criminal',
-            name='mafia_threat',
-            field=models.CharField(default='LOW', max_length=50),
+            model_name="criminal",
+            name="mafia_threat",
+            field=models.CharField(default="LOW", max_length=50),
         ),
         migrations.AddField(
-            model_name='criminal',
-            name='police_name',
-            field=models.CharField(default='Unknown', max_length=255),
+            model_name="criminal",
+            name="police_name",
+            field=models.CharField(default="Unknown", max_length=255),
         ),
         migrations.AddField(
-            model_name='criminal',
-            name='police_notes',
-            field=models.TextField(blank=True, default=''),
+            model_name="criminal",
+            name="police_notes",
+            field=models.TextField(blank=True, default=""),
         ),
         migrations.AddField(
-            model_name='criminal',
-            name='police_status',
-            field=models.CharField(default='ACTIVE', max_length=50),
+            model_name="criminal",
+            name="police_status",
+            field=models.CharField(default="ACTIVE", max_length=50),
         ),
         migrations.AddField(
-            model_name='criminal',
-            name='police_threat',
-            field=models.CharField(default='LOW', max_length=50),
+            model_name="criminal",
+            name="police_threat",
+            field=models.CharField(default="LOW", max_length=50),
         ),
     ]

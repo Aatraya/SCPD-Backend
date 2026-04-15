@@ -6,32 +6,32 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('Backend', '0001_initial'),
+        ("Backend", "0001_initial"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='incidents',
-            name='Inc_id',
+            model_name="incidents",
+            name="Inc_id",
         ),
         migrations.AddField(
-            model_name='incidents',
-            name='ai_generated',
+            model_name="incidents",
+            name="ai_generated",
             field=models.BooleanField(default=False),
         ),
         migrations.AddField(
-            model_name='incidents',
-            name='description',
-            field=models.TextField(blank=True, default=''),
+            model_name="incidents",
+            name="description",
+            field=models.TextField(blank=True, default=""),
         ),
         migrations.AddField(
-            model_name='incidents',
-            name='incident_type',
-            field=models.CharField(default='unknown', max_length=100),
+            model_name="incidents",
+            name="incident_type",
+            field=models.CharField(default="unknown", max_length=100),
         ),
         migrations.AddField(
-            model_name='incidents',
-            name='severity',
+            model_name="incidents",
+            name="severity",
             field=models.IntegerField(default=1),
         ),
     ]

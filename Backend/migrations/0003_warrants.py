@@ -6,19 +6,34 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('Backend', '0002_remove_incidents_inc_id_incidents_ai_generated_and_more'),
+        ("Backend", "0002_remove_incidents_inc_id_incidents_ai_generated_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Warrants',
+            name="Warrants",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('target_id', models.CharField(max_length=300)),
-                ('urgency', models.IntegerField(default=50)),
-                ('justification', models.TextField(blank=True, null=True)),
-                ('type_warrant', models.CharField(choices=[('WARRANT', 'Warrant'), ('BURN', 'Burn Order')], default='WARRANT', max_length=20)),
-                ('timestamp', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("target_id", models.CharField(max_length=300)),
+                ("urgency", models.IntegerField(default=50)),
+                ("justification", models.TextField(blank=True, null=True)),
+                (
+                    "type_warrant",
+                    models.CharField(
+                        choices=[("WARRANT", "Warrant"), ("BURN", "Burn Order")],
+                        default="WARRANT",
+                        max_length=20,
+                    ),
+                ),
+                ("timestamp", models.DateTimeField(auto_now_add=True)),
             ],
         ),
     ]

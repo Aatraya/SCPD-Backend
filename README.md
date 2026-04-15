@@ -32,7 +32,7 @@ A Django REST Framework backend for the Sin City Police Department (SCPD) survei
 
 ## Project Structure
 
-```
+```plaintext
 SCPD-Backend/
 ├── README.md                  # Project documentation
 ├── manage.py                  # Django management script
@@ -167,7 +167,7 @@ ALTER DATABASE sincity_db OWNER TO aatraya;
 
 Create a `.env` file in the root directory (never commit this):
 
-```
+```plaintext
 SECRET_KEY=your-random-secret-key
 DB_NAME=sincity_db
 DB_USER=aatraya
@@ -330,14 +330,14 @@ Base URL: `http://127.0.0.1:8000/api/v1/`
 ### Authentication
 
 | Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
+| - | - | - | - |
 | POST | `/token/` | Login — returns access + refresh JWT tokens | No |
 | POST | `/token/refresh/` | Refresh expired access token | No |
 
 ### Criminals
 
 | Method | Endpoint | Description | Auth Required | Admin Only |
-|--------|----------|-------------|---------------|-----------|
+| - | - | - | - | - |
 | GET | `/criminals/` | List all criminals (Police see limited fields, Mafia see all) | Yes | No |
 | GET | `/criminals/{id}/` | Retrieve single criminal | Yes | No |
 
@@ -346,7 +346,7 @@ Base URL: `http://127.0.0.1:8000/api/v1/`
 ### Police Officers
 
 | Method | Endpoint | Description | Auth Required | Admin Only |
-|--------|----------|-------------|---------------|-----------|
+| - | - | - | - | - |
 | GET | `/police/` | List all police officers | Yes | No |
 | GET | `/police/{id}/` | Retrieve single officer | Yes | No |
 | POST | `/police/` | Create new police officer | Yes | Yes |
@@ -354,7 +354,7 @@ Base URL: `http://127.0.0.1:8000/api/v1/`
 ### Incidents
 
 | Method | Endpoint | Description | Auth Required | Admin Only |
-|--------|----------|-------------|---------------|-----------|
+| - | - | - | - | - |
 | GET | `/incidents/` | List incidents (Mafia see all, Police see only non-clandestine) | Yes | No |
 | GET | `/incidents/{id}/` | Retrieve single incident | Yes | No |
 | GET | `/incidents/map/` | Get map-ready incident data with coordinates | Yes | No |
@@ -365,10 +365,10 @@ Base URL: `http://127.0.0.1:8000/api/v1/`
 
 **Access Control**: Clandestine incidents only visible to Mafia users.
 
-### Warrants
+### Warrants API
 
 | Method | Endpoint | Description | Auth Required | Admin Only |
-|--------|----------|-------------|---------------|-----------|
+| - | - | - | - | - |
 | GET | `/warrants/` | List all warrants (sorted by latest first) | Yes | No |
 | GET | `/warrants/{id}/` | Retrieve single warrant | Yes | No |
 | POST | `/warrants/` | Create new warrant | Yes | Yes |
@@ -378,7 +378,7 @@ Base URL: `http://127.0.0.1:8000/api/v1/`
 ### Privilege Escalation
 
 | Method | Endpoint | Description | Auth Required |
-|--------|----------|-------------|---------------|
+| - | - | - | - |
 | POST | `/breach/` | Escalate privileges to Mafia access | Yes |
 
 **Request body**: `{"code": "CORLEONE_2026"}`
@@ -387,7 +387,7 @@ Base URL: `http://127.0.0.1:8000/api/v1/`
 
 ---
 
-## Authentication
+## JWT Authentication
 
 This API uses JWT (JSON Web Tokens). Access token expires in **5 minutes**. Refresh token expires in **1 day**.
 
@@ -463,7 +463,7 @@ Success response:
 ### Criminal
 
 | Field | Type | Description |
-|-------|------|-------------|
+| - | - | - |
 | criminal_id | CharField | Unique criminal identifier |
 | incidents | TextField | Related incident descriptions |
 | last_seen | DateTimeField | Last known sighting |
@@ -481,17 +481,17 @@ Example `unmonitored_lanes` JSON:
 ### Police
 
 | Field | Type | Description |
-|-------|------|-------------|
+| - | - | - |
 | police_id | CharField | Unique officer ID |
 | name | CharField | Officer name |
 | area | CharField | Patrol area |
 | dob | DateField | Date of birth |
 | salary | DecimalField | Officer salary |
 
-### Incidents
+### Incidents Model
 
 | Field | Type | Description |
-|-------|------|-------------|
+| - | - | - |
 | title | CharField | Incident title |
 | Location | TextField | Location description |
 | Time | DateTimeField | Time of incident |
@@ -506,7 +506,7 @@ Example `unmonitored_lanes` JSON:
 ### Warrants
 
 | Field | Type | Description |
-|-------|------|-------------|
+| - | - | - |
 | target_id | CharField | Target criminal/suspect identifier |
 | urgency | IntegerField | Priority level 0-100 |
 | justification | TextField | Legal justification for warrant |
@@ -521,7 +521,7 @@ Incidents are auto-generated using Python's `random` module — no external API 
 
 ### Las Vegas Bounding Box
 
-```
+```plaintext
 Latitude:  35.95 to 36.40
 Longitude: -115.40 to -114.96
 ```
@@ -737,7 +737,7 @@ python3 manage.py test
 
 ### PostgreSQL Connection Error
 
-```
+```plaintext
 psycopg.OperationalError: connection failed
 ```
 
@@ -745,7 +745,7 @@ psycopg.OperationalError: connection failed
 
 ### Migration Conflicts
 
-```
+```plaintext
 django.db.migrations.exceptions.InconsistentMigrationHistory
 ```
 
@@ -753,7 +753,7 @@ django.db.migrations.exceptions.InconsistentMigrationHistory
 
 ### CORS Error in Frontend
 
-```
+```plaintext
 Access to XMLHttpRequest blocked by CORS policy
 ```
 
@@ -861,6 +861,7 @@ Response:
 ```
 
 ---
+
 ## 📚 Additional Resources
 
 - [Django Documentation](https://docs.djangoproject.com/)

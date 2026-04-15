@@ -7,45 +7,68 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Criminal',
+            name="Criminal",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('criminal_id', models.CharField(max_length=255)),
-                ('incidents', models.TextField()),
-                ('last_seen', models.DateTimeField()),
-                ('loyalty_name', models.CharField(max_length=255)),
-                ('loyalty_level', models.IntegerField()),
-                ('unmonitored_lanes', models.JSONField()),
-                ('casinos', models.TextField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("criminal_id", models.CharField(max_length=255)),
+                ("incidents", models.TextField()),
+                ("last_seen", models.DateTimeField()),
+                ("loyalty_name", models.CharField(max_length=255)),
+                ("loyalty_level", models.IntegerField()),
+                ("unmonitored_lanes", models.JSONField()),
+                ("casinos", models.TextField()),
             ],
         ),
         migrations.CreateModel(
-            name='Incidents',
+            name="Incidents",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('Inc_id', models.IntegerField()),
-                ('title', models.CharField(max_length=500)),
-                ('Location', models.TextField()),
-                ('Time', models.DateTimeField()),
-                ('latitude', models.DecimalField(decimal_places=6, max_digits=9)),
-                ('longitude', models.DecimalField(decimal_places=6, max_digits=9)),
-                ('clandestine', models.BooleanField(default=False)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("Inc_id", models.IntegerField()),
+                ("title", models.CharField(max_length=500)),
+                ("Location", models.TextField()),
+                ("Time", models.DateTimeField()),
+                ("latitude", models.DecimalField(decimal_places=6, max_digits=9)),
+                ("longitude", models.DecimalField(decimal_places=6, max_digits=9)),
+                ("clandestine", models.BooleanField(default=False)),
             ],
         ),
         migrations.CreateModel(
-            name='Police',
+            name="Police",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('police_id', models.CharField(max_length=50, unique=True)),
-                ('name', models.CharField(max_length=100)),
-                ('area', models.CharField(max_length=100)),
-                ('dob', models.DateField()),
-                ('salary', models.DecimalField(decimal_places=2, max_digits=12)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("police_id", models.CharField(max_length=50, unique=True)),
+                ("name", models.CharField(max_length=100)),
+                ("area", models.CharField(max_length=100)),
+                ("dob", models.DateField()),
+                ("salary", models.DecimalField(decimal_places=2, max_digits=12)),
             ],
         ),
     ]
