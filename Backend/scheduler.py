@@ -14,17 +14,9 @@ def rotate_incidents():
         LV_LNG_MAX,
     )
 
-<<<<<<< HEAD
-    # 1. DELETE one random AI-generated incident
-    # We only target ai_generated=True so we don't accidentally delete your fixed test data!
-    incident_to_delete = (
-        Incidents.objects.filter(ai_generated=True).order_by("?").first()
-    )
-=======
     # 1. DELETE ANY random incident (Removed the ai_generated=True safeguard)
     # order_by('?') tells the PostgreSQL database to pick a truly random row
-    incident_to_delete = Incidents.objects.order_by('?').first()
->>>>>>> f12ebe0bb42ca6c75dc3b993d5f2a19fa3bc1ee0
+    incident_to_delete = Incidents.objects.order_by("?").first()
     if incident_to_delete:
         incident_to_delete.delete()
         print(f"Deleted incident: {incident_to_delete.title}")
@@ -52,11 +44,7 @@ def rotate_incidents():
         incident_type=incident_type,
         clandestine=random.choice([True, False]),
         description="Auto-generated rotating incident",
-<<<<<<< HEAD
         ai_generated=True,
-=======
-        ai_generated=True 
->>>>>>> f12ebe0bb42ca6c75dc3b993d5f2a19fa3bc1ee0
     )
     print(f"Added incident: {new_incident.title}")
 

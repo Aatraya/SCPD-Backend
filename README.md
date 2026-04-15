@@ -24,7 +24,7 @@ Django REST Framework backend for the SCPD v2 dual-theme surveillance dashboard.
 ## Tech Stack
 
 | Component | Technology |
-|---|---|
+| - | - |
 | Framework | Django 6.0.4 |
 | API Layer | Django REST Framework 3.17 |
 | Auth | SimpleJWT 5.5.1 |
@@ -119,6 +119,7 @@ Manages arrest warrants and burn orders.
 ## Installation & Setup
 
 ### Prerequisites
+
 - Python 3.13
 - PostgreSQL 17 running locally
 
@@ -183,7 +184,7 @@ python manage.py migrate
 Migration `0005` automatically creates three users:
 
 | Username | Password | Role |
-|---|---|---|
+| - | - | - |
 | `officer_vance` | `securepassword123` | Police (standard user) |
 | `tony_pro` | `mafiapassword456` | Mafia (elevated group) |
 | `admin_aatraya` | `adminpassword789` | Superuser |
@@ -203,7 +204,8 @@ python manage.py runserver   # http://127.0.0.1:8000
 Incidents are generated using Python's `random` module — no external API required. Pins are placed around 15 real Las Vegas landmarks with a small random offset to spread them naturally.
 
 **Coverage area:**
-```
+
+```plaintext
 Latitude:  35.95 – 36.40
 Longitude: -115.40 – -114.96
 ```
@@ -221,6 +223,7 @@ curl -X POST http://127.0.0.1:8000/api/v1/incidents/generate/ \
 ### Live Rotation (APScheduler)
 
 `BackgroundScheduler` runs automatically when the server starts (controlled by the `RUN_MAIN` or `RENDER` env var in `apps.py`). Every 1–2 minutes it:
+
 1. Deletes one random incident.
 2. Creates one new random incident at a different Las Vegas location.
 
