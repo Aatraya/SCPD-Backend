@@ -1,32 +1,39 @@
-# SCPD — Sin City Police Department API
+# SCPD — Sin City Police Department · Backend
 
-A Django REST Framework backend for the Sin City Police Department (SCPD) surveillance system with dual role-based access control. Manage criminals, police officers, incidents, and warrants with restricted views for Police users and full access for Mafia members. Features JWT authentication, AI-generated incidents, map visualization, analytics dashboards, and a privilege escalation endpoint.
+[![Django](https://img.shields.io/badge/Django-6.0.4-green?style=for-the-badge&logo=django)](https://www.djangoproject.com/)
+[![DRF](https://img.shields.io/badge/DRF-3.17-red?style=for-the-badge)](https://www.django-rest-framework.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-17-blue?style=for-the-badge&logo=postgresql)](https://www.postgresql.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+
+Django REST Framework backend for the SCPD v2 dual-theme surveillance dashboard. Manages criminals, incidents, warrants, and police officers — with two-tier role-based access control that serves fundamentally different data views to **Police** users and **Mafia** users.
 
 ---
 
-## 🎯 Key Features
+## Key Features
 
-- **Role-Based Access Control**: Two user tiers (Police & Mafia) with different data visibility
-- **JWT Authentication**: Secure token-based authentication with refresh token support
-- **AI-Generated Incidents**: Automatically generate realistic incidents across Las Vegas locations
-- **Map Data Endpoint**: Get incident data with GPS coordinates for map visualization
-- **Analytics Dashboard**: Query incidents by type, severity, and timeline (last 7 days)
-- **Privilege Escalation**: Secret breach endpoint to grant Mafia access (`CORLEONE_2026` code)
-- **Warrant Management**: Track arrest warrants and burn orders with urgency levels
-- **Dynamic Filtering**: Automatically filter sensitive data based on user role
-- **CORS Support**: Pre-configured for local frontend development (React, Vite, Next.js)
+- **Two-Tier RBAC**: Police and Mafia groups receive different querysets and serialized fields from the same endpoints.
+- **JWT Authentication**: Short-lived access tokens with refresh support via `djangorestframework-simplejwt`.
+- **Privilege Escalation Endpoint**: Secret bypass code promotes a user to the Mafia group at runtime.
+- **AI-Generated Incidents**: Randomly generates realistic incidents across real Las Vegas landmarks.
+- **Live Incident Rotation**: APScheduler swaps one incident every 1–2 minutes, keeping the map dynamic.
+- **Map & Graph Data Endpoints**: Pre-shaped responses for frontend map pins and analytics charts.
+- **Render-Ready Deployment**: `build.sh`, WhiteNoise static files, `dj-database-url`, CORS configured.
 
 ---
 
 ## Tech Stack
 
-- Python 3.13
-- Django 6.0.3
-- Django REST Framework
-- PostgreSQL 17
-- SimpleJWT (Authentication)
-- Whitenoise (Static files)
-- psycopg[binary,pool] (PostgreSQL driver)
+| Component | Technology |
+|---|---|
+| Framework | Django 6.0.4 |
+| API Layer | Django REST Framework 3.17 |
+| Auth | SimpleJWT 5.5.1 |
+| Database | PostgreSQL 17 |
+| ORM Driver | psycopg 3 (binary + pool) |
+| Scheduler | APScheduler 3.11 |
+| Static Files | WhiteNoise 6.12 |
+| CORS | django-cors-headers 4.9 |
+| Deployment | Render |
 
 ---
 
@@ -111,55 +118,45 @@ Manages arrest warrants and burn orders.
 
 ## Installation & Setup
 
-### 1. Clone the repository
+### Prerequisites
+- Python 3.13
+- PostgreSQL 17 running locally
+
+### 1. Clone and create virtual environment
 
 ```bash
-git clone <your-repo-url>
-cd SCPD
-```
-
-### 2. Create and activate virtual environment
-
-```bash
+git clone https://github.com/your-org/scpd-backend.git
+cd scpd-backend
 python3 -m venv .venv
 source .venv/bin/activate
 ```
 
-### 3. Install dependencies
+### 2. Install dependencies
 
 ```bash
-pip install django djangorestframework django-cors-headers
-pip install "psycopg[binary,pool]"
-pip install whitenoise
-pip install djangorestframework-simplejwt
-pip install gunicorn  # for production
-pip install apscheduler
-pip install dj-database-url
+pip install -r requirements.txt
 ```
 
-### 4. Install and setup PostgreSQL
+### 3. Configure environment variables
 
-```bash
-# Install PostgreSQL (run in regular terminal, not venv)
-sudo apt install postgresql postgresql-contrib
-sudo systemctl start postgresql
-sudo systemctl enable postgresql
+Create a `.env` file (never commit this):
+
+```env
+SECRET_KEY=your-random-50-char-secret-key
+DATABASE_URL=postgres://youruser:yourpassword@127.0.0.1:5432/sincity_db
 ```
 
-### 5. Create database and user
+### 4. Set up PostgreSQL
 
 ```bash
 sudo -u postgres psql
 ```
 
-Inside psql:
-
 ```sql
 CREATE DATABASE sincity_db;
-CREATE USER aatraya WITH PASSWORD 'your_secure_password';
-GRANT ALL PRIVILEGES ON DATABASE sincity_db TO aatraya;
-GRANT ALL ON SCHEMA public TO aatraya;
-ALTER DATABASE sincity_db OWNER TO aatraya;
+CREATE USER youruser WITH PASSWORD 'yourpassword';
+GRANT ALL PRIVILEGES ON DATABASE sincity_db TO youruser;
+ALTER DATABASE sincity_db OWNER TO youruser;
 \q
 ```
 
@@ -180,146 +177,54 @@ BREACH_CODE=CORLEONE_2026
 ### 7. Run migrations
 
 ```bash
-source .venv/bin/activate
-python3 manage.py makemigrations
-python3 manage.py migrate
+python manage.py migrate
 ```
 
-### 8. Create superuser
+Migration `0005` automatically creates three users:
+
+| Username | Password | Role |
+|---|---|---|
+| `officer_vance` | `securepassword123` | Police (standard user) |
+| `tony_pro` | `mafiapassword456` | Mafia (elevated group) |
+| `admin_aatraya` | `adminpassword789` | Superuser |
+
+> ⚠️ Change all default passwords before any public deployment.
+
+### 6. Start the server
 
 ```bash
-python3 manage.py createsuperuser
+python manage.py runserver   # http://127.0.0.1:8000
 ```
-
-### 9. Start the server
-
-```bash
-python3 manage.py runserver
-```
-
-Server runs at: `http://127.0.0.1:8000`
 
 ---
 
-## 🚀 Quick Start
+## AI Incident Generator
 
-### 1. Create test users
+Incidents are generated using Python's `random` module — no external API required. Pins are placed around 15 real Las Vegas landmarks with a small random offset to spread them naturally.
 
-```bash
-# Access Django shell
-python3 manage.py shell
-
-# Create a police officer user
-from django.contrib.auth.models import User, Group
-police_user = User.objects.create_user('officer1', 'officer@pd.com', 'pass123')
-
-# Create a mafia user
-mafia_user = User.objects.create_user('capo1', 'capo@mob.com', 'pass123')
-
-# Assign mafia_user to Mafia group
-mafia_group, _ = Group.objects.get_or_create(name='Mafia')
-mafia_user.groups.add(mafia_group)
-mafia_user.save()
-
-exit()
+**Coverage area:**
+```
+Latitude:  35.95 – 36.40
+Longitude: -115.40 – -114.96
 ```
 
-### 2. Generate test data
+**Incident types:** `robbery`, `assault`, `fraud`, `murder`, `smuggling`
 
 ```bash
-# Generate 10 incidents
+# Generate 10 incidents (requires admin token)
 curl -X POST http://127.0.0.1:8000/api/v1/incidents/generate/ \
   -H "Authorization: Bearer <ADMIN_TOKEN>" \
   -H "Content-Type: application/json" \
   -d '{"count": 10}'
 ```
 
-### 3. Test the API
+### Live Rotation (APScheduler)
 
-**Login as police officer:**
+`BackgroundScheduler` runs automatically when the server starts (controlled by the `RUN_MAIN` or `RENDER` env var in `apps.py`). Every 1–2 minutes it:
+1. Deletes one random incident.
+2. Creates one new random incident at a different Las Vegas location.
 
-```bash
-curl -X POST http://127.0.0.1:8000/api/v1/token/ \
-  -H "Content-Type: application/json" \
-  -d '{"username": "officer1", "password": "pass123"}'
-```
-
-**Get incidents (limited view):**
-
-```bash
-curl http://127.0.0.1:8000/api/v1/incidents/ \
-  -H "Authorization: Bearer <POLICE_TOKEN>"
-# Only non-clandestine incidents visible
-```
-
-**Login as mafia member and escalate:**
-
-```bash
-curl -X POST http://127.0.0.1:8000/api/v1/breachSecurity/ \
-  -H "Authorization: Bearer <MAFIA_TOKEN>" \
-  -H "Content-Type: application/json" \
-  -d '{"code": "CORLEONE_2026"}'
-```
-
-**After breach, get all incidents (including clandestine):**
-
-```bash
-curl http://127.0.0.1:8000/api/v1/incidents/ \
-  -H "Authorization: Bearer <MAFIA_TOKEN>"
-```
-
----
-
-## Settings Configuration
-
-### settings.py key configurations
-
-```python
-INSTALLED_APPS = [
-    ...
-    'rest_framework',
-    'corsheaders',
-    'Backend',
-]
-
-MIDDLEWARE = [
-    'whitenoise.middleware.WhiteNoiseMiddleware',
-    'corsheaders.middleware.CorsMiddleware',
-    ...
-]
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'sincity_db',
-        'USER': 'aatraya',
-        'PASSWORD': 'your_secure_password',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-        'OPTIONS': {
-            'pool': True,
-        },
-    }
-}
-
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-    ],
-}
-
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",   # React default
-    "http://localhost:5173",   # Vite default
-    # Add your frontend production URL here when deploying
-]
-
-STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
-```
+This keeps the frontend map alive without any manual intervention.
 
 ---
 
@@ -394,54 +299,19 @@ This API uses JWT (JSON Web Tokens). Access token expires in **5 minutes**. Refr
 ### Login
 
 ```bash
+# Get a police token
 curl -X POST http://127.0.0.1:8000/api/v1/token/ \
   -H "Content-Type: application/json" \
-  -d '{"username": "aatraya", "password": "yourpassword"}'
-```
+  -d '{"username": "officer_vance", "password": "securepassword123"}'
 
-Response:
-
-```json
-{
-    "access": "eyJ0eXAiOiJKV1...",
-    "refresh": "eyJ0eXAiOiJKV1..."
-}
-```
-
-### Using the token
-
-```bash
-curl http://127.0.0.1:8000/api/v1/criminals/ \
-  -H "Authorization: Bearer eyJ0eXAiOiJKV1..."
-```
-
-### Refresh token
-
-```bash
-curl -X POST http://127.0.0.1:8000/api/v1/token/refresh/ \
+# Get a mafia token
+curl -X POST http://127.0.0.1:8000/api/v1/token/ \
   -H "Content-Type: application/json" \
-  -d '{"refresh": "eyJ0eXAiOiJKV1..."}'
-```
+  -d '{"username": "tony_pro", "password": "mafiapassword456"}'
 
----
-
-## Role-Based Access Control
-
-### Police / Normal Users
-
-- Can view criminals but **cannot see**: `loyalty_name`, `loyalty_level`, `unmonitored_lanes`
-- Cannot see incidents marked as `clandestine: true`
-
-### Mafia Users
-
-- Can see **all** criminal fields including classified data
-- Can see **all** incidents including clandestine ones
-
-### System Breach — Escalate to Mafia
-
-```bash
+# Escalate any user to Mafia
 curl -X POST http://127.0.0.1:8000/api/v1/breach/ \
-  -H "Authorization: Bearer <your_token>" \
+  -H "Authorization: Bearer <token>" \
   -H "Content-Type: application/json" \
   -d '{"code": "CORLEONE_2026"}'
 ```
@@ -529,41 +399,7 @@ Longitude: -115.40 to -114.96
 ### Generate incidents
 
 ```bash
-curl -X POST http://127.0.0.1:8000/api/v1/incidents/generate/ \
-  -H "Authorization: Bearer <admin_token>" \
-  -H "Content-Type: application/json" \
-  -d '{"count": 10}'
-```
-
-### Map data response format
-
-```json
-[
-  {
-    "id": 2,
-    "title": "Smuggling at Bellagio Area",
-    "location": "Bellagio Area",
-    "latitude": 36.119726,
-    "longitude": -115.18204,
-    "severity": 4,
-    "incident_type": "smuggling",
-    "time": "2026-04-11T15:01:18Z",
-    "clandestine": false,
-    "ai_generated": true
-  }
-]
-```
-
-### Graph data response format
-
-```json
-{
-  "by_type": [{"incident_type": "smuggling", "count": 7}],
-  "by_severity": [{"severity": 1, "count": 3}],
-  "by_day": [{"day": "2026-04-11", "count": 30}],
-  "total": 31,
-  "ai_generated": 30
-}
+python manage.py migrate --fake-initial
 ```
 
 ---
@@ -572,109 +408,7 @@ curl -X POST http://127.0.0.1:8000/api/v1/incidents/generate/ \
 
 URL: `http://127.0.0.1:8000/admin/`
 
-Login with superuser credentials. From here you can:
-
-- Add/edit/delete Criminals, Police, Incidents
-- Manage Users and Groups
-- Assign users to the **Mafia** group for elevated access
-
----
-
-## Frontend Integration (Next.js)
-
-### Install packages
-
-```bash
-npm install react-leaflet leaflet recharts axios
-```
-
-### 1. Login
-
-```javascript
-const res = await axios.post('http://127.0.0.1:8000/api/v1/token/', {
-  username, password
-})
-localStorage.setItem('access', res.data.access)
-localStorage.setItem('refresh', res.data.refresh)
-```
-
-### 2. Authenticated requests header
-
-```javascript
-const headers = { Authorization: `Bearer ${localStorage.getItem('access')}` }
-```
-
-### 3. Map — fetch and render pins
-
-```javascript
-const res = await axios.get('http://127.0.0.1:8000/api/v1/incidents/map/', { headers })
-
-// Each incident → drop a pin at latitude, longitude
-// Use severity for pin color:
-const pinColor = (severity) => {
-  if (severity >= 7) return 'red'
-  if (severity >= 4) return 'orange'
-  return 'green'
-}
-
-// Default Las Vegas map center
-center={[36.1699, -115.1398]}
-zoom={12}
-
-// Each incident has:
-// latitude, longitude  → pin position
-// severity (1-10)      → pin color
-// incident_type        → pin label/icon
-// title                → popup text
-// clandestine          → only visible to Mafia users
-```
-
-### 4. Graph — fetch and render charts
-
-```javascript
-const res = await axios.get('http://127.0.0.1:8000/api/v1/incidents/graph/', { headers })
-
-// res.data.by_type      → Pie chart or Bar chart
-// res.data.by_severity  → Bar chart
-// res.data.by_day       → Line chart / Timeline
-// res.data.total        → Stat card
-// res.data.ai_generated → Stat card
-```
-
-### 5. Generate incidents button (admin only)
-
-```javascript
-await axios.post('http://127.0.0.1:8000/api/v1/incidents/generate/',
-  { count: 10 },
-  { headers }
-)
-// Then refetch map and graph data
-```
-
-### 6. Mafia breach button
-
-```javascript
-await axios.post('http://127.0.0.1:8000/api/v1/breach/',
-  { code: 'CORLEONE_2026' },
-  { headers }
-)
-// After this criminals endpoint shows loyalty_name, loyalty_level, unmonitored_lanes
-// Incidents endpoint shows clandestine incidents too
-```
-
-### 7. Token refresh (access token expires in 5 mins)
-
-```javascript
-const res = await axios.post('http://127.0.0.1:8000/api/v1/token/refresh/', {
-  refresh: localStorage.getItem('refresh')
-})
-localStorage.setItem('access', res.data.access)
-// Call this automatically when any request returns 401 Unauthorized
-```
-
-### CORS
-
-Already configured for `localhost:3000` and `localhost:5173` — no browser errors during development.
+Login with superuser credentials to manage all models, assign users to the `Mafia` group manually, and inspect the full dataset.
 
 ---
 

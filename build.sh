@@ -10,3 +10,6 @@ python manage.py collectstatic --no-input
 
 # Apply any outstanding database migrations
 python manage.py migrate
+
+# NEW: Auto-create a superuser (the '|| true' prevents build failures if the user already exists)
+python manage.py createsuperuser --noinput --username admin --email admin@scpd.com || true

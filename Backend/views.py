@@ -47,7 +47,7 @@ class CriminalViewSet(viewsets.ModelViewSet):
         if user.is_authenticated and user.groups.filter(name="Mafia").exists():
             return Criminal.syndicate.all()
         return Criminal.objects.all()
-
+    
     def get_permissions(self):
         if self.action in ["list", "retrieve", "create"]:
             return [permissions.IsAuthenticated()]
