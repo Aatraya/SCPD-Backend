@@ -129,6 +129,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:3000",
     "https://scpd.vercel.app",
+    "https://scpd.live",
+    "https://www.scpd.live",
 ]
 
 CORS_ALLOWED_ORIGIN_REGEXES = [
